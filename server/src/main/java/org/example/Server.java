@@ -6,7 +6,6 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class Server {
-    //11
     static ServerSocket server;
     static Socket socket;
     static final int PORT = 8189;
