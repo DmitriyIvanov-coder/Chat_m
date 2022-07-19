@@ -7,6 +7,8 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class client
+//    tests
+//    ddd
 {
     static Socket socket;
     static final int PORT = 8189;
