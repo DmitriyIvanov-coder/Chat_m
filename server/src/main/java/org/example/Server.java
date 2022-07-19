@@ -16,6 +16,7 @@ public class Server {
 
     public static void main(String[] args) {
 //        Hello world!
+//        something interesting
         try {
             server = new ServerSocket(PORT);
             System.out.println("server started");
