@@ -18,6 +18,9 @@ public class Server {
 //        Hello world!
 //        some new words
         //        some new words
+        //        some new words
+        //        some new words
+        //        some new words
         try {
             server = new ServerSocket(PORT);
             System.out.println("server started");
