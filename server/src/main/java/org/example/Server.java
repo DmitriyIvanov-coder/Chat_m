@@ -3,59 +3,27 @@ package org.example;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Server {
     static ServerSocket server;
-    static Socket socket;
+    private Socket socket;
     static final int PORT = 8189;
-    static DataInputStream in;
-    static DataOutputStream out;
+
+    static List<ClientHandler> clientHandlerList = new ArrayList<>();
 
 
-
-    public static void main(String[] args) {
+    public Server () {
         try {
             server = new ServerSocket(PORT);
             System.out.println("server started");
-            socket=server.accept();
-            System.out.println("client connected");
-
-
-            in = new DataInputStream(socket.getInputStream());
-            out = new DataOutputStream(socket.getOutputStream());
-            Scanner sc = new Scanner(System.in);
-
-            Thread t1 = new Thread(()->{
-                while (true){
-                    while (true){
-                        String msgOut =  sc.nextLine();
-                        try {
-                            out.writeUTF(msgOut);
-                            System.out.println("Server: "+msgOut);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-            });
-            t1.setDaemon(true);
-            t1.start();
-
-
-
             while (true){
-                String str = in.readUTF();
-                if (str.equals("/end")){
-                    System.out.println("client disconnected");
-                    out.writeUTF("/end");
-                    break;
-                }
+                socket=server.accept();
+                System.out.println("client connected");
+                clientHandlerList.add(new ClientHandler( this, socket));
 
-                System.out.println("Client: "+str);
-//                out.writeUTF("ECHO: "+str);
             }
-
         }catch (IOException e){
             e.printStackTrace();
         }finally {
@@ -64,6 +32,14 @@ public class Server {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    public void sendMsg( String msg, String name) throws IOException {
+        DataOutputStream out;
+        for (ClientHandler c :clientHandlerList) {
+            out=new DataOutputStream(c.getSocket().getOutputStream());
+            out.writeUTF("Client"+name+": "+msg);
         }
     }
 }

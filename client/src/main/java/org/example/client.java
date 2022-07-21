@@ -10,7 +10,8 @@ public class client
 {
     static Socket socket;
     static final int PORT = 8189;
-    static final String IP_ADDRESS = "localhost";
+//    static final String IP_ADDRESS = "localhost";
+    static final String IP_ADDRESS = "192.168.1.140";
 
     static DataInputStream in;
     static DataOutputStream out;
@@ -30,7 +31,7 @@ public class client
                        String msgOut =  sc.nextLine();
                        try {
                            out.writeUTF(msgOut);
-                           System.out.println("Client: "+msgOut);
+//                           System.out.println("Client: "+msgOut);
 
                        } catch (IOException e) {
                            throw new RuntimeException(e);
@@ -48,7 +49,6 @@ public class client
                     out.writeUTF("/end");
                     break;
                 }
-//                System.out.println(msgIn);
                 System.out.println("Server: "+msgIn);
             }
         } catch (IOException e) {
