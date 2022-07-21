@@ -10,8 +10,8 @@ public class client
 {
     static Socket socket;
     static final int PORT = 8189;
-//    static final String IP_ADDRESS = "localhost";
-    static final String IP_ADDRESS = "192.168.1.140";
+    static final String IP_ADDRESS = "localhost";
+
 
     static DataInputStream in;
     static DataOutputStream out;
