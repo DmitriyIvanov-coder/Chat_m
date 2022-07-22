@@ -34,15 +34,14 @@ public class ClientHandler {
 
                 while (true){
                     String echo = in.readUTF();
+                    System.out.println("Client"+socket.getRemoteSocketAddress()+": "+echo);
                     server.sendMsg(echo, getSocketName());
-//                    out.writeUTF("Client"+socket.getRemoteSocketAddress()+": "+echo);
-
-//                    System.out.println("Client"+socket.getRemoteSocketAddress()+": "+echo);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }finally {
                 try {
+                    server.removeFromClientHandlerList(this);
                     socket.close();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -52,32 +51,6 @@ public class ClientHandler {
 
         t1.start();
 
-        /*Thread t2 = new Thread(()->{
-            try {
-                while (true){
-                    in = new DataInputStream(socket.getInputStream());
-                    String str = in.readUTF();
-                    if (str.equals("/end")){
-                        System.out.println("client disconnected");
-                        out.writeUTF("/end");
-                        break;
-                    }
-
-                    System.out.println("Client: "+str);
-//                out.writeUTF("ECHO: "+str);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }finally {
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-        });
-        t2.start();*/
 
     }
 }
