@@ -23,26 +23,20 @@ public class AuthThread implements Runnable{
     public void run() {
         try {
             while (true){
-                if (in.readBoolean()){
-                    if (server.registerClient(socketClient)){
+                String authMode = in.readUTF();
+                if (authMode.startsWith("R ")){
+                    if (server.registerClient(socketClient, authMode)){
                         break;
                     }
-                }else {
-                    if (server.checkClientData(socketClient)){
+                }else if (authMode.startsWith("Ch ")){
+                    if (server.checkClientData(socketClient, authMode)){
                         break;
                     }
                 }
             }
-            server.clientHandlerList.add(new ClientHandler( server, socketClient));
         }catch (IOException e){
             e.printStackTrace();
         }
-//        finally {
-//            try {
-//                socketClient.close();
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
+
     }
 }

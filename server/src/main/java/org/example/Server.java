@@ -44,7 +44,7 @@ public class Server {
         DataOutputStream out;
         for (ClientHandler c :clientHandlerList) {
             out=new DataOutputStream(c.getSocket().getOutputStream());
-            out.writeUTF("Client"+name+": "+msg);
+            out.writeUTF(name+": "+msg);
         }
     }
 
@@ -54,20 +54,18 @@ public class Server {
         System.out.println("ClientHandler removed");
         System.out.println(clientHandlerList);
     }
-    public boolean registerClient(Socket socket) throws IOException {
-        while (true){
-            String inMsg = in.readUTF();
-            if (!inMsg.equals("0")){
+    public boolean registerClient(Socket socket,  String inMsg) throws IOException {
+//            String inMsg = in.readUTF();
                 String login;
                 String password;
                 String nickname;
 
                 boolean reg = true;
 
-                String[] clientData = inMsg.split(" ", 3);
-                login = clientData[0];
-                password = clientData[1];
+                String[] clientData = inMsg.split(" ", 4);
+                login = clientData[1];
                 nickname = clientData[2];
+                password = clientData[3];
 
                 for (RegisteredClient rc:registeredClientList) {
                     if (rc.getLogin().equals(login)){
@@ -77,43 +75,42 @@ public class Server {
                 if (reg){
                     registeredClientList.add(new RegisteredClient(login, password, nickname));
                     out.writeBoolean(true);
+                    clientHandlerList.add(new ClientHandler( this, socket, nickname));
                     return true;
                 }else {
                     out.writeBoolean(false);
+                    return false;
                 }
-            }else {
-                return false;
-            }
-        }
+
+
     }
 
-    public boolean checkClientData(Socket socket) throws IOException {
-        while (true) {
-            String inMsg = in.readUTF();
-            if (!inMsg.equals("0")) {
+    public boolean checkClientData(Socket socket, String inMsg) throws IOException {
+
                 String login;
                 String password;
+                String nickname = null;
                 boolean next = false;
 
-                String[] clientData = inMsg.split(" ");
-                login = clientData[0];
-                password = clientData[1];
+                String[] clientData = inMsg.split(" ", 3);
+                login = clientData[1];
+                password = clientData[2];
                 for (RegisteredClient rc : registeredClientList) {
                     if (rc.getLogin().equals(login) && rc.getPassword().equals(password)) {
                         next = true;
+                        nickname = rc.getNickname();
                         break;
                     }
                 }
                 if (next) {
                     out.writeBoolean(true);
+                    out.writeUTF(nickname);
+                    clientHandlerList.add(new ClientHandler( this, socket, nickname));
                     return true;
-                }else
+                }else {
                     out.writeBoolean(false);
+                    return false;
+                }
 
-
-            } else {
-                return false;
-            }
-        }
     }
 }

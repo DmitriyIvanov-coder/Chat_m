@@ -9,6 +9,7 @@ public class ClientHandler {
     private Server server;
     private Socket socket;
     private String socketName;
+    private String nickName;
 
     public String getSocketName() {
         return socketName;
@@ -19,23 +20,28 @@ public class ClientHandler {
     }
 
     private DataInputStream in;
-    private DataOutputStream out;
+//    private DataOutputStream out;
 
-    public ClientHandler( Server server, Socket socket) {
+
+    public ClientHandler(Server server, Socket socket, String nickName) {
         this.server = server;
         this.socket = socket;
-        socketName = String.valueOf(socket.getRemoteSocketAddress());
+        this.nickName = nickName;
 
 
-        Thread t1 = new Thread(()->{
+    Thread t1 = new Thread(()->{
             try {
                 in = new DataInputStream(socket.getInputStream());
-                out = new DataOutputStream(socket.getOutputStream());
+//                out = new DataOutputStream(socket.getOutputStream());
 
                 while (true){
                     String echo = in.readUTF();
+                    if (echo.equals("//end")){
+                        System.out.println("Client"+socket.getRemoteSocketAddress()+": "+echo);
+                        break;
+                    }
                     System.out.println("Client"+socket.getRemoteSocketAddress()+": "+echo);
-                    server.sendMsg(echo, getSocketName());
+                    server.sendMsg(echo, nickName);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -50,7 +56,6 @@ public class ClientHandler {
         });
 
         t1.start();
-
 
     }
 }
