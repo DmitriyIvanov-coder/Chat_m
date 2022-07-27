@@ -9,6 +9,11 @@ public class ClientHandler {
     private Server server;
     private Socket socket;
     private String socketName;
+
+    public String getNickName() {
+        return nickName;
+    }
+
     private String nickName;
 
     public String getSocketName() {
@@ -20,7 +25,7 @@ public class ClientHandler {
     }
 
     private DataInputStream in;
-//    private DataOutputStream out;
+    private DataOutputStream out;
 
 
     public ClientHandler(Server server, Socket socket, String nickName) {
@@ -32,16 +37,24 @@ public class ClientHandler {
     Thread t1 = new Thread(()->{
             try {
                 in = new DataInputStream(socket.getInputStream());
-//                out = new DataOutputStream(socket.getOutputStream());
+                out = new DataOutputStream(socket.getOutputStream());
 
                 while (true){
                     String echo = in.readUTF();
-                    if (echo.equals("//end")){
-                        System.out.println("Client"+socket.getRemoteSocketAddress()+": "+echo);
-                        break;
+                    if (echo.startsWith("//")){
+                        if (echo.equals("//end")){
+                            System.out.println("Client"+socket.getRemoteSocketAddress()+": "+echo);
+                            break;
+                        }else if (echo.startsWith("//wto")){
+                            System.out.println("Client" + socket.getRemoteSocketAddress() + ": " + echo);
+                            server.sendPrivateMsg(echo, nickName, out);
+                        }else {
+                            out.writeUTF("Неизвестная команда");
+                        }
+                    } else {
+                        System.out.println("Client" + socket.getRemoteSocketAddress() + ": " + echo);
+                        server.sendMsg(echo, nickName, out);
                     }
-                    System.out.println("Client"+socket.getRemoteSocketAddress()+": "+echo);
-                    server.sendMsg(echo, nickName);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -56,6 +69,5 @@ public class ClientHandler {
         });
 
         t1.start();
-
     }
-}
+    }

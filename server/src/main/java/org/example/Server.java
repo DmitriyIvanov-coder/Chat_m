@@ -40,11 +40,46 @@ public class Server {
         }
     }
 
-    public void sendMsg( String msg, String name) throws IOException {
+    public void sendMsg( String msg, String name, DataOutputStream toSender) throws IOException {
         DataOutputStream out;
-        for (ClientHandler c :clientHandlerList) {
-            out=new DataOutputStream(c.getSocket().getOutputStream());
-            out.writeUTF(name+": "+msg);
+        if (msg.isEmpty()||msg.trim().length()==0){
+            toSender.writeUTF("System: Нельзя отправлять пустое сообщение");
+        }else {
+            for (ClientHandler c :clientHandlerList) {
+                out=new DataOutputStream(c.getSocket().getOutputStream());
+                out.writeUTF(name+": "+msg);
+            }
+        }
+
+    }
+
+    public void sendPrivateMsg(String msg, String name, DataOutputStream toSender) throws IOException {
+        DataOutputStream out;
+        String[] privateMsg = msg.split(" ", 3);
+        if (privateMsg.length<2){
+            toSender.writeUTF("System: Укажите получателя");
+        } else
+        if (privateMsg.length != 3){
+            toSender.writeUTF("System: Нельзя отправлять пустое сообщение");
+        }else if (privateMsg[2].trim().length()==0||privateMsg[2].isEmpty()){
+            toSender.writeUTF("System: Нельзя отправлять пустое сообщение");
+        }else {
+
+
+                String nickAddress = privateMsg[1];
+                boolean isExist = false;
+                for (ClientHandler c :clientHandlerList) {
+
+                    if (c.getNickName().equals(nickAddress)){
+                        out=new DataOutputStream(c.getSocket().getOutputStream());
+                        out.writeUTF("(P) "+name+": "+privateMsg[2]);
+                        isExist=true;
+                        break;
+                    }
+                }
+                if (isExist){
+                    toSender.writeUTF("(to"+nickAddress+") "+name+": "+privateMsg[2]);
+                }
         }
     }
 
@@ -103,14 +138,28 @@ public class Server {
                     }
                 }
                 if (next) {
-                    out.writeBoolean(true);
-                    out.writeUTF(nickname);
-                    clientHandlerList.add(new ClientHandler( this, socket, nickname));
-                    return true;
+                    if (!isClientOnline(nickname)){
+                        clientHandlerList.add(new ClientHandler( this, socket, nickname));
+                        out.writeUTF("0");
+                        out.writeUTF(nickname);
+                        return true;
+                    }else {
+                        out.writeUTF("2");
+                        return false;
+                    }
                 }else {
-                    out.writeBoolean(false);
+                    out.writeUTF("1");
                     return false;
                 }
 
+    }
+
+    public boolean isClientOnline(String nickname){
+        for (ClientHandler list : clientHandlerList) {
+            if (list.getNickName().equals(nickname)){
+                return true;
+            }
+        }
+        return false;
     }
 }
