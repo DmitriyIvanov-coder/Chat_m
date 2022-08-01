@@ -27,6 +27,9 @@ public class ClientHandler {
     private DataInputStream in;
     private DataOutputStream out;
 
+    public DataOutputStream getOut() {
+        return out;
+    }
 
     public ClientHandler(Server server, Socket socket, String nickName) {
         this.server = server;
@@ -42,7 +45,11 @@ public class ClientHandler {
                 while (true){
                     String echo = in.readUTF();
                     if (echo.startsWith("//")){
+                        if (echo.equals("//ready")){
+                            server.sendOnlineClients();
+                        }else
                         if (echo.equals("//end")){
+                            server.sendOnlineClients();
                             System.out.println("Client"+socket.getRemoteSocketAddress()+": "+echo);
                             break;
                         }else if (echo.startsWith("//wto")){
@@ -61,6 +68,7 @@ public class ClientHandler {
             }finally {
                 try {
                     server.removeFromClientHandlerList(this);
+                    server.sendOnlineClients();
                     socket.close();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -69,5 +77,6 @@ public class ClientHandler {
         });
 
         t1.start();
+
     }
     }

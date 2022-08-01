@@ -13,6 +13,7 @@ public class Server {
 
     static List<ClientHandler> clientHandlerList = new ArrayList<>();
     static List<RegisteredClient> registeredClientList = new ArrayList<>();
+    List<String> onlineClientsNicks = new ArrayList<>();
     static DataInputStream in;
     static DataOutputStream out;
 
@@ -64,22 +65,29 @@ public class Server {
         }else if (privateMsg[2].trim().length()==0||privateMsg[2].isEmpty()){
             toSender.writeUTF("System: Нельзя отправлять пустое сообщение");
         }else {
-
-
                 String nickAddress = privateMsg[1];
+            if (name.equals(nickAddress)){
+                toSender.writeUTF("System: Нельзя отправлять сообщения самому себе");
+            }else {
                 boolean isExist = false;
                 for (ClientHandler c :clientHandlerList) {
+                    if (c.getNickName().equals(name)){
 
-                    if (c.getNickName().equals(nickAddress)){
-                        out=new DataOutputStream(c.getSocket().getOutputStream());
-                        out.writeUTF("(P) "+name+": "+privateMsg[2]);
-                        isExist=true;
-                        break;
+                        continue;
+                    } else{
+                        if (c.getNickName().equals(nickAddress)){
+                            out=new DataOutputStream(c.getSocket().getOutputStream());
+                            out.writeUTF("(P) "+name+": "+privateMsg[2]);
+                            isExist=true;
+                            break;
+                        }
                     }
                 }
                 if (isExist){
                     toSender.writeUTF("(to"+nickAddress+") "+name+": "+privateMsg[2]);
                 }
+            }
+
         }
     }
 
@@ -110,7 +118,6 @@ public class Server {
                 if (reg){
                     registeredClientList.add(new RegisteredClient(login, password, nickname));
                     out.writeBoolean(true);
-                    clientHandlerList.add(new ClientHandler( this, socket, nickname));
                     return true;
                 }else {
                     out.writeBoolean(false);
@@ -161,5 +168,19 @@ public class Server {
             }
         }
         return false;
+    }
+
+    public void sendOnlineClients() throws IOException {
+        for (ClientHandler ch:clientHandlerList) {
+            onlineClientsNicks.add(ch.getNickName());
+        }
+        for (ClientHandler ch:clientHandlerList) {
+            ch.getOut().writeUTF("//");
+            OutputStream outputStream = ch.getSocket().getOutputStream();
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+            objectOutputStream.writeObject(onlineClientsNicks);
+        }
+        onlineClientsNicks.clear();
+
     }
 }
