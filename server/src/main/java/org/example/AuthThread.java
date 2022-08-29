@@ -29,13 +29,15 @@ public class AuthThread implements Runnable{
             while (true){
                 String authMode = in.readUTF();
                 if (authMode.startsWith("R ")){
-                    if (registerClient(authMode)){
-                        break;
-                    }
-                }else if (authMode.startsWith("Ch ")){
+                    registerClient(authMode);
+                }else if (authMode.startsWith("SI ")){
                     if (checkClientData(authMode)){
                         break;
                     }
+                } else if (authMode.startsWith("Ch ")) {
+                    changeLogin(authMode);
+                }else {
+                    break;
                 }
             }
         }catch (IOException | SQLException e){
@@ -44,16 +46,13 @@ public class AuthThread implements Runnable{
 
     }
 
-    public boolean registerClient(String inMsg) throws IOException, SQLException {
+    public void registerClient(String inMsg) throws IOException, SQLException {
         String login;
         String password;
-        String nickname;
-
-        boolean reg = true;
 
         String[] clientData = inMsg.split(" ", 4);
         login = clientData[1];
-        nickname = clientData[2];
+
         password = clientData[3];
 
 
@@ -61,11 +60,10 @@ public class AuthThread implements Runnable{
             //если логин не сущетвует
             dataBaseClients.addClient(login,password);
             out.writeBoolean(true);
-            return true;
+
         }else {
             //если логин уже существует
             out.writeBoolean(false);
-            return false;
         }
 
 
@@ -75,8 +73,6 @@ public class AuthThread implements Runnable{
 
         String login;
         String password;
-        String nickname = null;
-        boolean next = false;
 
         String[] clientData = inMsg.split(" ", 3);
         login = clientData[1];
@@ -97,5 +93,27 @@ public class AuthThread implements Runnable{
             return false;
         }
 
+    }
+
+    public void changeLogin(String inMsg) throws SQLException, IOException {
+        String login;
+        String password;
+        String newLogin;
+
+        String[] clientData = inMsg.split(" ", 4);
+        login = clientData[1];
+        password = clientData[2];
+        newLogin = clientData[3];
+        if (dataBaseClients.checkAuthorization(login, password)){
+            if (dataBaseClients.checkExists(newLogin)){
+                out.writeInt(0);
+                dataBaseClients.changeLogin(login,newLogin);
+//                dataBaseClients.readDB();
+            }else {
+                out.writeInt(2);
+            }
+        } else {
+            out.writeInt(1);
+        }
     }
 }

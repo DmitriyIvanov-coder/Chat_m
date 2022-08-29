@@ -60,4 +60,21 @@ public class DataBaseClients {
 
         }
     }
+
+    public void changeLogin(String login, String newLogin) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE clients SET login = ? WHERE login = ?");
+        preparedStatement.setString(1,newLogin);
+        preparedStatement.setString(2,login);
+        preparedStatement.execute();
+
+    }
+
+    public void readDB() throws SQLException {
+        resultSet = statement.executeQuery("SELECT * FROM clients");
+        while (resultSet.next()){
+            String login = resultSet.getString("login");
+            String password = resultSet.getString("password");
+            System.out.println(login+" "+password);
+        }
+    }
 }
