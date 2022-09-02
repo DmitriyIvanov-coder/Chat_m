@@ -37,6 +37,7 @@ public class AuthThread implements Runnable{
                 } else if (authMode.startsWith("Ch ")) {
                     changeLogin(authMode);
                 }else {
+                    System.out.println("client disconnected");
                     break;
                 }
             }
@@ -55,18 +56,14 @@ public class AuthThread implements Runnable{
 
         password = clientData[3];
 
-
         if (dataBaseClients.checkExists(login)){
             //если логин не сущетвует
             dataBaseClients.addClient(login,password);
             out.writeBoolean(true);
-
         }else {
             //если логин уже существует
             out.writeBoolean(false);
         }
-
-
     }
 
     public boolean checkClientData(String inMsg) throws IOException, SQLException {

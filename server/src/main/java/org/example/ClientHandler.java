@@ -4,6 +4,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ClientHandler {
     private Server server;
@@ -27,6 +29,7 @@ public class ClientHandler {
     private DataInputStream in;
     private DataOutputStream out;
 
+    ExecutorService executorService = Executors.newSingleThreadExecutor();
     public DataOutputStream getOut() {
         return out;
     }
@@ -36,8 +39,7 @@ public class ClientHandler {
         this.socket = socket;
         this.nickName = nickName;
 
-
-    Thread t1 = new Thread(()->{
+        executorService.execute(()->{
             try {
                 in = new DataInputStream(socket.getInputStream());
                 out = new DataOutputStream(socket.getOutputStream());
@@ -75,8 +77,6 @@ public class ClientHandler {
                 }
             }
         });
-
-        t1.start();
-
+        executorService.shutdown();
     }
     }

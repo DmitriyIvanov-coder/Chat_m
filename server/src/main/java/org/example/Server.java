@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
     static ServerSocket server;
@@ -19,9 +21,12 @@ public class Server {
     static DataInputStream in;
     static DataOutputStream out;
 
+    ExecutorService executorService;
+
 
     public Server () throws SQLException, ClassNotFoundException {
         try {
+            executorService = Executors.newCachedThreadPool();
             server = new ServerSocket(PORT);
             System.out.println("server started");
             while (true){
@@ -29,8 +34,8 @@ public class Server {
                 System.out.println("client connected");
                 in = new DataInputStream(socket.getInputStream());
                 out = new DataOutputStream(socket.getOutputStream());
-                new AuthThread(this,socket, out, in, dataBaseClients).run();
-
+                executorService.execute(new AuthThread(this,socket, out, in, dataBaseClients));
+//                executorService.shutdown();
             }
         }catch (IOException e){
             e.printStackTrace();
@@ -120,6 +125,5 @@ public class Server {
             objectOutputStream.writeObject(onlineClientsNicks);
         }
         onlineClientsNicks.clear();
-
     }
 }
